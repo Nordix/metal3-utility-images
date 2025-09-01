@@ -12,9 +12,20 @@ KEEPALIVED_DATA_DIR="${CUSTOM_DATA_DIR}/keepalived"
 mkdir -p "${KEEPALIVED_CONF_DIR}" "${KEEPALIVED_DATA_DIR}"
 cp "${KEEPALIVED_DEFAULT_CONF}" "${KEEPALIVED_CONF}"
 
-export assignedIP="${PROVISIONING_IP}/32"
+# With IPv6 we need to also provide link local address
+if [[ "${PROVISIONING_IP}" = *":"* ]]; then
+    ll_address="fe80::0123:4567:89ab:cdef/64"
+    assignedIP="${PROVISIONING_IP}/64"
+else
+    ll_address=""
+    assignedIP="${PROVISIONING_IP}/32"
+fi
+
+export ll_address
+export assignedIP
 export interface="${PROVISIONING_INTERFACE}"
 
+sed -i "s~CHANGE_LINKLOCAL~${ll_address}~g" "${KEEPALIVED_CONF}"
 sed -i "s~INTERFACE~${interface}~g" "${KEEPALIVED_CONF}"
 sed -i "s~CHANGEIP~${assignedIP}~g" "${KEEPALIVED_CONF}"
 

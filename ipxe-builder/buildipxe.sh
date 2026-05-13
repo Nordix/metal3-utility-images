@@ -90,11 +90,11 @@ sed -i 's/^\/\/#define[ \t]CONSOLE_SERIAL/#define\tCONSOLE_SERIAL/g' \
     "config/console.h"
 
 # shellcheck disable=SC2086
-/usr/bin/make "bin/undionly.kpxe" "bin-${ARCH}-efi/snponly.efi" ${IPXE_BUILD_OPTIONS}
+/usr/bin/make "bin/undionly.kpxe" "bin-${ARCH}-efi/snponly-${ARCH}.efi" ${IPXE_BUILD_OPTIONS}
 
 mkdir -p "${IPXE_CUSTOM_FIRMWARE_DIR}"
 # These files will be copied by the rundnsmasq script to the shared volume.
 cp "/tmp/ipxe-source/src/bin/undionly.kpxe" \
-   "/tmp/ipxe-source/src/bin-${ARCH}-efi/snponly.efi" \
+   "/tmp/ipxe-source/src/bin-${ARCH}-efi/snponly-${ARCH}.efi" \
    "${IPXE_CUSTOM_FIRMWARE_DIR}"
 

@@ -15,11 +15,12 @@ export IPXE_EMBED_SCRIPT="${IPXE_EMBED_SCRIPT:-/bin/embed.ipxe}"
 export IPXE_EMBED_SCRIPT_TEMPLATE="${IPXE_EMBED_SCRIPT_TEMPLATE:-/bin/embed.ipxe.j2}"
 export IPXE_RELEASE_BRANCH="${IPXE_RELEASE_BRANCH:-v1.21.1}"
 export IPXE_ENABLE_IPV6="${IPXE_ENABLE_IPV6:-false}"
-export IPXE_ENABLE_HTTPS="${IPXE_ENABLE_TLS:-false}"
+export IPXE_ENABLE_TLS="${IPXE_ENABLE_HTTPS:-false}"
 export IPXE_CERT_FILE="${IPXE_CERT_FILE:-/certs/ipxe/tls.crt}"
 export IPXE_KEY_FILE="${IPXE_KEY_FILE:-/certs/ipxe/tls.key}"
 export IPXE_TLS_PORT="${IPXE_TLS_PORT:-8084}"
 export IPXE_CHAIN_HOST="${IPXE_CHAIN_HOST:-0.0.0.0}"
+export IPXE_ENABLE_TLS13="${IPXE_ENABLE_TLS13:-false}"
 # IPXE_BUILD_OPTIONS are not configurable directly
 export IPXE_BUILD_OPTIONS="NO_WERROR=1"
 # PREPARE SOURCE #
@@ -81,6 +82,12 @@ if [[ "${IPXE_ENABLE_TLS}" == "true" ]]; then
         "config/general.h"
     sed -i 's/^#undef[ \t]DOWNLOAD_PROTO_HTTPS/#define\tDOWNLOAD_PROTO_HTTPS/g' \
         "config/general.h"
+    # iPXE defaults to TLS 1.2; raise the max to TLS 1.3 when requested.
+    if [[ "${IPXE_ENABLE_TLS13}" == "true" ]]; then
+        mkdir -p "config/local"
+        printf '#undef  TLS_VERSION_MAX\n#define TLS_VERSION_MAX TLS_VERSION_TLS_1_3\n' > "config/local/crypto.h"
+        echo "IPXE TLS_VERSION_MAX pinned to TLS 1.3"
+    fi
     echo "IPXE BUILD OPTIONS ARE EXTENDED WITH CERTS!!!"
     render_j2_config "${IPXE_EMBED_SCRIPT_TEMPLATE}" "${IPXE_EMBED_SCRIPT}"
     export IPXE_BUILD_OPTIONS="${IPXE_BUILD_OPTIONS} EMBED=${IPXE_EMBED_SCRIPT} CERT=${IPXE_CERT_FILE} TRUST=${IPXE_CERT_FILE}"
